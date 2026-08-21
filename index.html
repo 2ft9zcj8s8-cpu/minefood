@@ -2601,28 +2601,7 @@ async function load(){
     checkNewDay();
 
 }
-    const saved=
-        localStorage.getItem(
-            "minefood_ru_v3"
-        );
-
-    if(saved){
-
-        try{
-
-            game=JSON.parse(saved);
-
-        }catch{
-
-            console.log("Ошибка сохранения");
-
-        }
-
-    }
-
-    checkNewDay();
-
-}
+    
 
 
 /* =====================================================
