@@ -1,0 +1,3761 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MINEFOOD — Выживание</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root{
+    --green:#63ad3b;
+    --green2:#8bd653;
+    --dark:#171717;
+    --dark2:#242424;
+    --dark3:#303030;
+    --border:#0b0b0b;
+    --gray:#777;
+    --yellow:#ffd83d;
+    --red:#d8473d;
+    --blue:#54a8ff;
+    --purple:#b06cff;
+}
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    min-height:100vh;
+    color:#fff;
+    font-family:'Press Start 2P',monospace;
+    background:
+        linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.45)),
+        repeating-linear-gradient(
+            0deg,
+            #71ad43 0px,
+            #71ad43 32px,
+            #629b3a 32px,
+            #629b3a 64px
+        );
+    image-rendering:pixelated;
+}
+
+button,input,select{
+    font-family:inherit;
+}
+
+button{cursor:pointer}
+
+.header{
+    height:72px;
+    position:sticky;
+    top:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+    background:linear-gradient(#414141,#242424);
+    border-bottom:5px solid #0b0b0b;
+    box-shadow:0 5px 0 rgba(0,0,0,.35);
+}
+
+.logo{
+    font-size:20px;
+    text-shadow:4px 4px #111;
+}
+
+.logo span{color:var(--green2)}
+
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.level-box{
+    background:#111;
+    border:3px solid #050505;
+    padding:10px;
+    font-size:8px;
+}
+
+.xp-mini{color:var(--yellow)}
+
+.settings-button{
+    background:#555;
+    color:#fff;
+    border:3px solid #111;
+    padding:10px;
+    font-size:12px;
+}
+
+.app{
+    width:min(1180px,94%);
+    margin:30px auto 70px;
+}
+
+.page{display:none}
+.page.active{display:block}
+
+.hero{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.hero h1{
+    font-size:25px;
+    margin:0 0 12px;
+    text-shadow:5px 5px #111;
+}
+
+.hero p{
+    font-size:8px;
+    color:#ddd;
+    line-height:2;
+}
+
+.panel{
+    background:rgba(0,0,0,.8);
+    border:5px solid #0b0b0b;
+    box-shadow:inset 0 0 0 3px #666,8px 8px 0 rgba(0,0,0,.25);
+    padding:22px;
+    margin-bottom:25px;
+}
+
+.panel-title{
+    margin:0 0 20px;
+    font-size:13px;
+    text-shadow:3px 3px #111;
+}
+
+/* WORLD */
+
+.world{
+    height:300px;
+    position:relative;
+    overflow:hidden;
+    border:5px solid #111;
+    background:
+        linear-gradient(
+            #65b7ec 0%,
+            #92d6ef 56%,
+            #7fbe48 57%,
+            #659c39 100%
+        );
+    box-shadow:inset 0 0 0 3px #777;
+}
+
+.sun{
+    position:absolute;
+    right:80px;
+    top:35px;
+    width:55px;
+    height:55px;
+    background:#fff08a;
+    box-shadow:0 0 0 5px rgba(255,255,255,.1);
+}
+
+.cloud{
+    position:absolute;
+    background:#fff;
+    width:100px;
+    height:22px;
+    opacity:.85;
+}
+
+.cloud:before,
+.cloud:after{
+    content:"";
+    position:absolute;
+    background:#fff;
+}
+
+.cloud:before{
+    width:35px;
+    height:35px;
+    left:20px;
+    top:-17px;
+}
+
+.cloud:after{
+    width:45px;
+    height:40px;
+    left:55px;
+    top:-20px;
+}
+
+.cloud.one{top:55px;left:80px}
+.cloud.two{top:95px;right:230px;transform:scale(.7)}
+
+.mountain{
+    position:absolute;
+    bottom:90px;
+    width:0;
+    height:0;
+    border-left:90px solid transparent;
+    border-right:90px solid transparent;
+    border-bottom:130px solid #60747b;
+}
+
+.mountain:after{
+    content:"";
+    position:absolute;
+    left:-30px;
+    top:45px;
+    border-left:30px solid transparent;
+    border-right:30px solid transparent;
+    border-bottom:45px solid #eee;
+}
+
+.m1{left:15%;transform:scale(.8)}
+.m2{right:15%;transform:scale(1.1)}
+
+.ground{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:88px;
+    background:
+        linear-gradient(#72b843 0 20%,#79502f 20% 100%);
+    border-top:4px solid #314e21;
+}
+
+.grass-block{
+    position:absolute;
+    bottom:88px;
+    width:14px;
+    height:20px;
+    background:#4f922e;
+}
+
+.house{
+    position:absolute;
+    bottom:88px;
+    left:50%;
+    transform:translateX(-50%);
+    width:115px;
+    height:85px;
+    background:#9b663d;
+    border:5px solid #222;
+}
+
+.house-roof{
+    position:absolute;
+    left:-15px;
+    top:-55px;
+    width:135px;
+    height:60px;
+    background:#7c3029;
+    border:5px solid #222;
+    transform:skewX(-20deg);
+}
+
+.house-door{
+    position:absolute;
+    bottom:0;
+    left:43px;
+    width:30px;
+    height:48px;
+    background:#65452d;
+    border:4px solid #222;
+}
+
+.house-window{
+    position:absolute;
+    width:25px;
+    height:25px;
+    background:#6fc5df;
+    border:4px solid #222;
+    top:20px;
+}
+
+.house-window.left{left:12px}
+.house-window.right{right:12px}
+
+.world-info{
+    position:absolute;
+    left:15px;
+    top:15px;
+    background:rgba(0,0,0,.6);
+    border:3px solid #111;
+    padding:12px;
+    font-size:7px;
+    line-height:2;
+}
+
+/* HUD */
+
+.hud{
+    margin-top:20px;
+    background:rgba(0,0,0,.82);
+    border:5px solid #111;
+    box-shadow:inset 0 0 0 3px #666;
+    padding:22px;
+}
+
+.hud-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.calories{
+    font-size:18px;
+}
+
+.calories span{color:var(--yellow)}
+
+.remaining{
+    color:#aaa;
+    font-size:7px;
+    text-align:right;
+    line-height:2;
+}
+
+.energy-bar{
+    margin-top:17px;
+    height:25px;
+    padding:3px;
+    background:#111;
+    border:4px solid #050505;
+}
+
+.energy-fill{
+    width:0;
+    height:100%;
+    background:repeating-linear-gradient(
+        90deg,
+        #53aa32 0 12px,
+        #70cb43 12px 22px
+    );
+    transition:.5s;
+}
+
+.energy-fill.warning{
+    background:repeating-linear-gradient(
+        90deg,
+        #bd9022 0 12px,
+        #e6c33d 12px 22px
+    );
+}
+
+.energy-fill.full{
+    background:repeating-linear-gradient(
+        90deg,
+        #c53636 0 12px,
+        #f2534c 12px 22px
+    );
+}
+
+.hunger-title{
+    margin:20px 0 8px;
+    font-size:7px;
+    color:#aaa;
+}
+
+.hunger{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:2px;
+}
+
+.meat{
+    width:34px;
+    height:38px;
+    position:relative;
+}
+
+.meat-body{
+    position:absolute;
+    width:25px;
+    height:24px;
+    left:3px;
+    top:4px;
+    transform:rotate(-30deg);
+    background:#995936;
+    border:3px solid #1a0e0a;
+    box-shadow:inset 4px 4px #c17748;
+}
+
+.meat-body:after{
+    content:"";
+    position:absolute;
+    right:-9px;
+    bottom:-7px;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#e9dcc3;
+    border:3px solid #1a0e0a;
+}
+
+.meat.empty .meat-body{
+    background:#292929;
+    box-shadow:inset 4px 4px #3d3d3d;
+}
+
+.meat.empty .meat-body:after{background:#444}
+
+.meat.half .meat-body{
+    background:linear-gradient(
+        90deg,
+        #995936 50%,
+        #292929 50%
+    );
+}
+
+/* NAV */
+
+.tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin:25px 0;
+}
+
+.tab{
+    background:#444;
+    color:#fff;
+    border:4px solid #151515;
+    box-shadow:inset 0 0 0 2px #666;
+    padding:12px;
+    font-size:7px;
+}
+
+.tab.active,
+.tab:hover{
+    background:#5d9e37;
+}
+
+/* FOOD */
+
+.food-tools{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+}
+
+.search{
+    flex:1;
+    min-width:150px;
+    background:#111;
+    border:3px solid #080808;
+    color:#fff;
+    padding:13px;
+    font-size:8px;
+    outline:none;
+}
+
+.category{
+    background:#444;
+    color:#fff;
+    border:3px solid #111;
+    padding:10px;
+    font-size:7px;
+}
+
+.food-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(175px,1fr));
+    gap:13px;
+}
+
+.food-card{
+    position:relative;
+    background:linear-gradient(#505050,#2c2c2c);
+    border:4px solid #111;
+    box-shadow:inset 0 0 0 2px #666,5px 5px 0 rgba(0,0,0,.3);
+    padding:15px;
+    transition:.12s;
+    cursor:pointer;
+}
+
+.food-card:hover{
+    transform:translate(-2px,-2px);
+    filter:brightness(1.15);
+}
+
+.food-icon{
+    height:58px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:40px;
+    filter:drop-shadow(3px 3px #111);
+}
+
+.food-name{
+    text-align:center;
+    margin-top:10px;
+    font-size:8px;
+}
+
+.food-info{
+    display:flex;
+    justify-content:space-between;
+    margin-top:12px;
+    color:#aaa;
+    font-size:6px;
+}
+
+.food-info strong{color:var(--yellow)}
+
+.badge{
+    position:absolute;
+    top:5px;
+    right:5px;
+    background:#171717;
+    padding:5px;
+    color:#aaa;
+    font-size:5px;
+}
+
+/* LOG */
+
+.log-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px;
+    margin-bottom:7px;
+    background:rgba(255,255,255,.05);
+    border:2px solid #444;
+}
+
+.log-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.log-icon{font-size:27px}
+
+.log-name{font-size:8px}
+
+.log-meta{
+    color:#777;
+    font-size:5px;
+    margin-top:6px;
+    line-height:1.8;
+}
+
+.log-kcal{
+    color:var(--yellow);
+    font-size:8px;
+}
+
+.delete{
+    background:none;
+    border:0;
+    color:#888;
+    font-size:14px;
+}
+
+.delete:hover{color:#f44}
+
+.empty{
+    text-align:center;
+    padding:40px;
+    color:#666;
+    font-size:8px;
+    line-height:2;
+}
+
+/* STATS */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+}
+
+.stat{
+    background:#222;
+    border:3px solid #111;
+    padding:17px 8px;
+    text-align:center;
+}
+
+.stat-value{
+    color:var(--yellow);
+    font-size:17px;
+}
+
+.stat-label{
+    color:#777;
+    font-size:5px;
+    line-height:1.8;
+    margin-top:9px;
+}
+
+.chart{
+    height:230px;
+    display:flex;
+    align-items:flex-end;
+    gap:8px;
+    padding:15px;
+    background:#151515;
+    border:3px solid #111;
+}
+
+.chart-day{
+    flex:1;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    align-items:center;
+    gap:5px;
+}
+
+.chart-bar{
+    width:70%;
+    max-width:45px;
+    background:#60ac39;
+    border:2px solid #111;
+    min-height:2px;
+}
+
+.chart-value,
+.chart-label{
+    font-size:5px;
+    color:#777;
+}
+
+/* ACHIEVEMENTS */
+
+.achievement-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:12px;
+}
+
+.achievement{
+    padding:18px;
+    background:#242424;
+    border:4px solid #111;
+    opacity:.3;
+}
+
+.achievement.unlocked{
+    opacity:1;
+    box-shadow:inset 0 0 0 2px #62aa3b;
+}
+
+.achievement-icon{
+    font-size:34px;
+    margin-bottom:12px;
+}
+
+.achievement-name{font-size:8px}
+
+.achievement-desc{
+    color:#777;
+    font-size:6px;
+    line-height:1.8;
+    margin-top:9px;
+}
+
+/* BIOMES */
+
+.biomes{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+}
+
+.biome{
+    min-height:160px;
+    position:relative;
+    overflow:hidden;
+    border:4px solid #111;
+    background:#5c9d39;
+    padding:14px;
+}
+
+.biome.locked{
+    filter:grayscale(1);
+    opacity:.5;
+}
+
+.biome-icon{
+    font-size:38px;
+}
+
+.biome-name{
+    font-size:8px;
+    margin-top:12px;
+}
+
+.biome-condition{
+    color:#aaa;
+    font-size:6px;
+    margin-top:8px;
+    line-height:1.8;
+}
+
+/* PROFILE */
+
+.profile{
+    text-align:center;
+}
+
+.big-level{
+    color:var(--yellow);
+    font-size:40px;
+    text-shadow:5px 5px #111;
+}
+
+.profile-title{
+    font-size:11px;
+    margin-top:15px;
+}
+
+.xp-bar{
+    max-width:500px;
+    height:25px;
+    margin:25px auto 10px;
+    background:#111;
+    border:4px solid #050505;
+    padding:3px;
+}
+
+.xp-fill{
+    height:100%;
+    width:0;
+    background:#71ce3e;
+    transition:.5s;
+}
+
+.xp-text{
+    color:#777;
+    font-size:7px;
+}
+
+/* SETTINGS */
+
+.setting{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    padding:17px 0;
+    border-bottom:2px solid #444;
+}
+
+.setting-title{font-size:8px}
+
+.setting-desc{
+    color:#777;
+    font-size:5px;
+    margin-top:8px;
+    line-height:1.8;
+}
+
+.action{
+    border:3px solid #111;
+    background:#555;
+    color:#fff;
+    padding:11px;
+    font-size:7px;
+}
+
+.action.danger{background:#8d3030}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.8);
+    padding:20px;
+}
+
+.modal.show{display:flex}
+
+.modal-box{
+    width:min(500px,100%);
+    background:#303030;
+    border:5px solid #111;
+    box-shadow:inset 0 0 0 3px #666,10px 10px rgba(0,0,0,.5);
+    padding:24px;
+}
+
+.modal-top{text-align:center}
+
+.modal-icon{
+    font-size:65px;
+    filter:drop-shadow(4px 4px #111);
+}
+
+.modal-name{
+    font-size:13px;
+    margin-top:10px;
+}
+
+.modal-description{
+    color:#777;
+    font-size:6px;
+    margin-top:8px;
+}
+
+.input-label{
+    display:block;
+    color:#aaa;
+    font-size:7px;
+    margin:22px 0 8px;
+}
+
+.grams{
+    width:100%;
+    background:#111;
+    color:#fff;
+    border:4px solid #080808;
+    padding:14px;
+    font-size:12px;
+    outline:none;
+}
+
+.nutrition{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:6px;
+    margin-top:12px;
+}
+
+.nutrition-box{
+    text-align:center;
+    background:#181818;
+    border:2px solid #080808;
+    padding:10px 4px;
+}
+
+.nutrition-value{
+    color:var(--yellow);
+    font-size:9px;
+}
+
+.nutrition-label{
+    color:#777;
+    font-size:5px;
+    margin-top:7px;
+}
+
+.modal-buttons{
+    display:flex;
+    gap:8px;
+    margin-top:20px;
+}
+
+.modal-buttons button{
+    flex:1;
+    border:4px solid #111;
+    padding:13px;
+    font-size:7px;
+}
+
+.cancel{background:#555;color:#fff}
+.eat{background:#5d9e37;color:#fff}
+
+/* TOAST */
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:30px;
+    z-index:300;
+    transform:translate(-50%,120px);
+    opacity:0;
+    background:#222;
+    border:4px solid #111;
+    box-shadow:5px 5px rgba(0,0,0,.5);
+    padding:15px 20px;
+    font-size:8px;
+    transition:.3s;
+}
+
+.toast.show{
+    transform:translate(-50%,0);
+    opacity:1;
+}
+
+.toast strong{color:var(--yellow)}
+
+.xp-popup{
+    position:fixed;
+    right:30px;
+    top:90px;
+    z-index:250;
+    color:var(--green2);
+    font-size:8px;
+    animation:xpUp 1s forwards;
+}
+
+@keyframes xpUp{
+    0%{opacity:0;transform:translateY(20px)}
+    20%{opacity:1}
+    100%{opacity:0;transform:translateY(-40px)}
+}
+
+/* MOBILE */
+
+@media(max-width:700px){
+
+    .header{padding:0 10px}
+    .logo{font-size:13px}
+
+    .level-box{font-size:6px}
+
+    .hero h1{font-size:18px}
+
+    .calories{font-size:12px}
+
+    .stats-grid{
+        grid-template-columns:repeat(2,1fr)
+    }
+
+    .food-grid{
+        grid-template-columns:repeat(2,1fr);
+        gap:8px;
+    }
+
+    .food-card{padding:9px}
+
+    .food-icon{
+        font-size:32px;
+        height:48px;
+    }
+
+    .food-name{font-size:7px}
+
+    .food-info{
+        flex-direction:column;
+        gap:5px;
+    }
+
+    .nutrition{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .world{height:250px}
+
+    .tabs{gap:4px}
+
+    .tab{
+        padding:9px 7px;
+        font-size:6px;
+    }
+
+    .setting{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="logo">
+        MINE<span>FOOD</span>
+    </div>
+
+    <div class="header-right">
+
+        <div class="level-box">
+            УРОВЕНЬ <span id="headerLevel">1</span>
+            ·
+            <span class="xp-mini" id="headerXP">0 XP</span>
+        </div>
+
+        <button class="settings-button"
+                onclick="showPage('settings')">
+            ⚙
+        </button>
+
+    </div>
+
+</header>
+
+
+<div class="app">
+
+<!-- ================= HOME ================= -->
+
+<section class="page active" id="homePage">
+
+    <div class="hero">
+
+        <h1>ТВОЙ МИР</h1>
+
+        <p>
+            ВЫЖИВАЙ · ЕШЬ · ПОЛУЧАЙ ОПЫТ · ОТКРЫВАЙ БИОМЫ
+        </p>
+
+    </div>
+
+
+    <div class="world">
+
+        <div class="sun"></div>
+
+        <div class="cloud one"></div>
+        <div class="cloud two"></div>
+
+        <div class="mountain m1"></div>
+        <div class="mountain m2"></div>
+
+        <div class="house">
+
+            <div class="house-roof"></div>
+
+            <div class="house-door"></div>
+
+            <div class="house-window left"></div>
+            <div class="house-window right"></div>
+
+        </div>
+
+        <div class="ground"></div>
+
+        <div class="world-info">
+
+            БИОМ:
+            <span id="currentBiome">
+                РАВНИНЫ
+            </span>
+
+            <br>
+
+            ДЕНЬ:
+            <span id="dayNumber">
+                1
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- HUD -->
+
+    <div class="hud">
+
+        <div class="hud-row">
+
+            <div class="calories">
+
+                <span id="totalCalories">0</span>
+                / 1600 ККАЛ
+
+            </div>
+
+            <div class="remaining">
+
+                ОСТАЛОСЬ<br>
+
+                <span id="remainingCalories">
+                    1600
+                </span>
+                ККАЛ
+
+            </div>
+
+        </div>
+
+
+        <div class="energy-bar">
+
+            <div
+                class="energy-fill"
+                id="energyFill">
+            </div>
+
+        </div>
+
+
+        <div class="hunger-title">
+            ШКАЛА ГОЛОДА
+        </div>
+
+        <div
+            class="hunger"
+            id="hunger">
+        </div>
+
+    </div>
+
+
+    <!-- TABS -->
+
+    <div class="tabs">
+
+        <button
+            class="tab active"
+            onclick="showPage('home')">
+            🍎 ЕДА
+        </button>
+
+        <button
+            class="tab"
+            onclick="showPage('log')">
+            📜 ДНЕВНИК
+        </button>
+
+        <button
+            class="tab"
+            onclick="showPage('stats')">
+            📊 СТАТИСТИКА
+        </button>
+
+        <button
+            class="tab"
+            onclick="showPage('achievements')">
+            🏆 ДОСТИЖЕНИЯ
+        </button>
+
+        <button
+            class="tab"
+            onclick="showPage('biomes')">
+            🌍 БИОМЫ
+        </button>
+
+        <button
+            class="tab"
+            onclick="showPage('profile')">
+            ⭐ ПРОФИЛЬ
+        </button>
+
+    </div>
+
+
+    <!-- FOOD -->
+
+    <div class="panel">
+
+        <h2 class="panel-title">
+            🎒 ИНВЕНТАРЬ ЕДЫ
+        </h2>
+
+
+        <div class="food-tools">
+
+            <input
+                class="search"
+                id="search"
+                placeholder="ПОИСК ЕДЫ..."
+                oninput="renderFoods()"
+            >
+
+            <select
+                class="category"
+                id="category"
+                onchange="renderFoods()">
+
+                <option value="all">
+                    ВСЁ
+                </option>
+
+                <option value="fruit">
+                    ФРУКТЫ
+                </option>
+
+                <option value="vegetable">
+                    ОВОЩИ
+                </option>
+
+                <option value="meat">
+                    МЯСО
+                </option>
+
+                <option value="fish">
+                    РЫБА
+                </option>
+
+                <option value="dairy">
+                    МОЛОЧНОЕ
+                </option>
+
+                <option value="sweet">
+                    СЛАДКОЕ
+                </option>
+
+                <option value="other">
+                    ДРУГОЕ
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div
+            class="food-grid"
+            id="foodGrid">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= LOG ================= -->
+
+<section class="page" id="logPage">
+
+    <div class="panel">
+
+        <h2 class="panel-title">
+            📜 ДНЕВНИК ПИТАНИЯ
+        </h2>
+
+        <div id="logList"></div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= STATS ================= -->
+
+<section class="page" id="statsPage">
+
+    <div class="panel">
+
+        <h2 class="panel-title">
+            📊 СТАТИСТИКА ВЫЖИВАНИЯ
+        </h2>
+
+
+        <div class="stats-grid">
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="statToday">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    СЕГОДНЯ<br>ККАЛ
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="statAverage">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    СРЕДНЕЕ<br>7 ДНЕЙ
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="statStreak">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    СЕРИЯ<br>ДНЕЙ
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="statEntries">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    ВСЕГО<br>ПРОДУКТОВ
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <h2 class="panel-title"
+            style="margin-top:25px">
+            ПОСЛЕДНИЕ 7 ДНЕЙ
+        </h2>
+
+        <div
+            class="chart"
+            id="chart">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= ACHIEVEMENTS ================= -->
+
+<section class="page" id="achievementsPage">
+
+    <div class="panel">
+
+        <h2 class="panel-title">
+            🏆 ДОСТИЖЕНИЯ
+        </h2>
+
+        <div
+            class="achievement-grid"
+            id="achievementGrid">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= BIOMES ================= -->
+
+<section class="page" id="biomesPage">
+
+    <div class="panel">
+
+        <h2 class="panel-title">
+            🌍 ТВОЙ МИР
+        </h2>
+
+        <div
+            class="biomes"
+            id="biomes">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= PROFILE ================= -->
+
+<section class="page" id="profilePage">
+
+    <div class="panel profile">
+
+        <div class="big-level">
+            <span id="profileLevel">1</span>
+        </div>
+
+        <div class="profile-title">
+            УРОВЕНЬ ВЫЖИВАЛЬЩИКА
+        </div>
+
+
+        <div class="xp-bar">
+
+            <div
+                class="xp-fill"
+                id="xpFill">
+            </div>
+
+        </div>
+
+        <div class="xp-text">
+
+            <span id="profileXP">
+                0
+            </span>
+            /
+            100 XP ДО СЛЕДУЮЩЕГО УРОВНЯ
+
+        </div>
+
+
+        <div
+            class="stats-grid"
+            style="margin-top:30px">
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="profileEntries">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    ЗАПИСЕЙ
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="profileAchievements">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    ДОСТИЖЕНИЙ
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="profileDays">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    ДНЕЙ
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div
+                    class="stat-value"
+                    id="profileKcal">
+                    0
+                </div>
+
+                <div class="stat-label">
+                    ВСЕГО ККАЛ
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= SETTINGS ================= -->
+
+<section class="page" id="settingsPage">
+
+    <div class="panel">
+
+        <h2 class="panel-title">
+            ⚙ НАСТРОЙКИ
+        </h2>
+
+
+        <div class="setting">
+
+            <div>
+
+                <div class="setting-title">
+                    ИГРОВОЙ ЛИМИТ
+                </div>
+
+                <div class="setting-desc">
+                    Полная шкала голода = 1600 ккал.
+                    Это игровой параметр MINEFOOD.
+                </div>
+
+            </div>
+
+            <strong>
+                1600 ККАЛ
+            </strong>
+
+        </div>
+
+
+        <div class="setting">
+
+            <div>
+
+                <div class="setting-title">
+                    ЭКСПОРТ СОХРАНЕНИЯ
+                </div>
+
+                <div class="setting-desc">
+                    Скачать весь прогресс.
+                </div>
+
+            </div>
+
+            <button
+                class="action"
+                onclick="exportSave()">
+                ЭКСПОРТ
+            </button>
+
+        </div>
+
+
+        <div class="setting">
+
+            <div>
+
+                <div class="setting-title">
+                    ИМПОРТ СОХРАНЕНИЯ
+                </div>
+
+                <div class="setting-desc">
+                    Восстановить ранее сохранённый прогресс.
+                </div>
+
+            </div>
+
+            <button
+                class="action"
+                onclick="document.getElementById('importFile').click()">
+                ИМПОРТ
+            </button>
+
+            <input
+                type="file"
+                id="importFile"
+                accept=".json"
+                hidden
+                onchange="importSave(event)"
+            >
+
+        </div>
+
+
+        <div class="setting">
+
+            <div>
+
+                <div class="setting-title">
+                    СБРОСИТЬ МИР
+                </div>
+
+                <div class="setting-desc">
+                    Удалить весь локальный прогресс.
+                </div>
+
+            </div>
+
+            <button
+                class="action danger"
+                onclick="resetGame()">
+                УДАЛИТЬ
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+</div>
+
+
+<!-- ================= FOOD MODAL ================= -->
+
+<div
+    class="modal"
+    id="foodModal">
+
+    <div class="modal-box">
+
+        <div class="modal-top">
+
+            <div
+                class="modal-icon"
+                id="modalIcon">
+                🍎
+            </div>
+
+            <div
+                class="modal-name"
+                id="modalName">
+                Яблоко
+            </div>
+
+            <div
+                class="modal-description"
+                id="modalDescription">
+            </div>
+
+        </div>
+
+
+        <label class="input-label">
+            СКОЛЬКО ТЫ СЪЕЛА?
+        </label>
+
+        <input
+            class="grams"
+            type="number"
+            id="grams"
+            min="1"
+            max="5000"
+            oninput="calculateFood()"
+        >
+
+
+        <div class="nutrition">
+
+            <div class="nutrition-box">
+
+                <div
+                    class="nutrition-value"
+                    id="modalKcal">
+                    0
+                </div>
+
+                <div class="nutrition-label">
+                    ККАЛ
+                </div>
+
+            </div>
+
+
+            <div class="nutrition-box">
+
+                <div
+                    class="nutrition-value"
+                    id="modalProtein">
+                    0
+                </div>
+
+                <div class="nutrition-label">
+                    БЕЛКИ
+                </div>
+
+            </div>
+
+
+            <div class="nutrition-box">
+
+                <div
+                    class="nutrition-value"
+                    id="modalCarbs">
+                    0
+                </div>
+
+                <div class="nutrition-label">
+                    УГЛЕВОДЫ
+                </div>
+
+            </div>
+
+
+            <div class="nutrition-box">
+
+                <div
+                    class="nutrition-value"
+                    id="modalFat">
+                    0
+                </div>
+
+                <div class="nutrition-label">
+                    ЖИРЫ
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-buttons">
+
+            <button
+                class="cancel"
+                onclick="closeModal()">
+                ОТМЕНА
+            </button>
+
+            <button
+                class="eat"
+                onclick="eatFood()">
+                🍗 СЪЕСТЬ
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div
+    class="toast"
+    id="toast">
+</div>
+
+
+<script>
+
+/* =====================================================
+   ОСНОВНЫЕ НАСТРОЙКИ
+===================================================== */
+
+const LIMIT = 1600;
+const HUNGER = 20;
+const KCAL_PER_HUNGER = 80;
+
+
+/* =====================================================
+   БАЗА ЕДЫ
+
+   kcal / Б / У / Ж указаны НА 100 ГРАММ.
+===================================================== */
+
+const foods = [
+
+{
+    id:"apple",
+    name:"Яблоко",
+    icon:"🍎",
+    category:"fruit",
+    portion:182,
+    kcal:52,
+    protein:.3,
+    carbs:13.8,
+    fat:.2
+},
+
+{
+    id:"bread",
+    name:"Хлеб",
+    icon:"🍞",
+    category:"other",
+    portion:30,
+    kcal:250,
+    protein:8.5,
+    carbs:49,
+    fat:3.2
+},
+
+{
+    id:"potato",
+    name:"Картофель",
+    icon:"🥔",
+    category:"vegetable",
+    portion:150,
+    kcal:77,
+    protein:2,
+    carbs:17,
+    fat:.1
+},
+
+{
+    id:"bakedpotato",
+    name:"Печёный картофель",
+    icon:"🥔",
+    category:"vegetable",
+    portion:150,
+    kcal:93,
+    protein:2.5,
+    carbs:21,
+    fat:.1
+},
+
+{
+    id:"carrot",
+    name:"Морковь",
+    icon:"🥕",
+    category:"vegetable",
+    portion:61,
+    kcal:41,
+    protein:.9,
+    carbs:9.6,
+    fat:.2
+},
+
+{
+    id:"beet",
+    name:"Свёкла",
+    icon:"🫜",
+    category:"vegetable",
+    portion:82,
+    kcal:43,
+    protein:1.6,
+    carbs:9.6,
+    fat:.2
+},
+
+{
+    id:"watermelon",
+    name:"Арбуз",
+    icon:"🍉",
+    category:"fruit",
+    portion:300,
+    kcal:30,
+    protein:.6,
+    carbs:7.6,
+    fat:.2
+},
+
+{
+    id:"melon",
+    name:"Дыня",
+    icon:"🍈",
+    category:"fruit",
+    portion:150,
+    kcal:34,
+    protein:.8,
+    carbs:8.2,
+    fat:.2
+},
+
+{
+    id:"pumpkin",
+    name:"Тыква",
+    icon:"🎃",
+    category:"vegetable",
+    portion:100,
+    kcal:26,
+    protein:1,
+    carbs:6.5,
+    fat:.1
+},
+
+{
+    id:"mushroom",
+    name:"Грибы",
+    icon:"🍄",
+    category:"vegetable",
+    portion:100,
+    kcal:22,
+    protein:3.1,
+    carbs:3.3,
+    fat:.3
+},
+
+{
+    id:"egg",
+    name:"Яйцо",
+    icon:"🥚",
+    category:"other",
+    portion:50,
+    kcal:143,
+    protein:12.6,
+    carbs:.7,
+    fat:9.5
+},
+
+{
+    id:"milk",
+    name:"Молоко",
+    icon:"🥛",
+    category:"dairy",
+    portion:250,
+    kcal:61,
+    protein:3.2,
+    carbs:4.8,
+    fat:3.3
+},
+
+{
+    id:"chicken",
+    name:"Курица",
+    icon:"🍗",
+    category:"meat",
+    portion:100,
+    kcal:165,
+    protein:31,
+    carbs:0,
+    fat:3.6
+},
+
+{
+    id:"beef",
+    name:"Говядина",
+    icon:"🥩",
+    category:"meat",
+    portion:100,
+    kcal:250,
+    protein:26,
+    carbs:0,
+    fat:17
+},
+
+{
+    id:"pork",
+    name:"Свинина",
+    icon:"🥩",
+    category:"meat",
+    portion:100,
+    kcal:242,
+    protein:27,
+    carbs:0,
+    fat:14
+},
+
+{
+    id:"rabbit",
+    name:"Кролик",
+    icon:"🍖",
+    category:"meat",
+    portion:100,
+    kcal:173,
+    protein:33,
+    carbs:0,
+    fat:3.5
+},
+
+{
+    id:"salmon",
+    name:"Лосось",
+    icon:"🐟",
+    category:"fish",
+    portion:100,
+    kcal:208,
+    protein:20,
+    carbs:0,
+    fat:13
+},
+
+{
+    id:"cod",
+    name:"Треска",
+    icon:"🐟",
+    category:"fish",
+    portion:100,
+    kcal:82,
+    protein:18,
+    carbs:0,
+    fat:.7
+},
+
+{
+    id:"cookie",
+    name:"Печенье",
+    icon:"🍪",
+    category:"sweet",
+    portion:25,
+    kcal:480,
+    protein:6,
+    carbs:68,
+    fat:20
+},
+
+{
+    id:"cake",
+    name:"Торт",
+    icon:"🍰",
+    category:"sweet",
+    portion:100,
+    kcal:350,
+    protein:5,
+    carbs:50,
+    fat:15
+},
+
+{
+    id:"pie",
+    name:"Тыквенный пирог",
+    icon:"🥧",
+    category:"sweet",
+    portion:100,
+    kcal:240,
+    protein:3,
+    carbs:34,
+    fat:10
+},
+
+{
+    id:"berries",
+    name:"Сладкие ягоды",
+    icon:"🫐",
+    category:"fruit",
+    portion:100,
+    kcal:50,
+    protein:.7,
+    carbs:12,
+    fat:.3
+},
+
+{
+    id:"honey",
+    name:"Мёд",
+    icon:"🍯",
+    category:"sweet",
+    portion:20,
+    kcal:304,
+    protein:.3,
+    carbs:82,
+    fat:0
+},
+
+{
+    id:"kelp",
+    name:"Сушёная ламинария",
+    icon:"🌿",
+    category:"other",
+    portion:100,
+    kcal:45,
+    protein:2.9,
+    carbs:9.6,
+    fat:.6
+}
+
+];
+
+
+/* =====================================================
+   СОСТОЯНИЕ ИГРЫ
+===================================================== */
+
+let game = {
+
+    date:today(),
+
+    entries:[],
+
+    history:{},
+
+    xp:0,
+
+    totalEntries:0,
+
+    totalKcal:0,
+
+    daysPlayed:0,
+
+    achievements:[]
+
+};
+
+let selectedFood=null;
+
+
+/* =====================================================
+   БИОМЫ
+===================================================== */
+
+const biomes=[
+
+{
+    name:"Равнины",
+    icon:"🌱",
+    level:1,
+    description:"Твой первый мир."
+},
+
+{
+    name:"Лес",
+    icon:"🌲",
+    level:5,
+    description:"Зелёный лес открывается на 5 уровне."
+},
+
+{
+    name:"Пустыня",
+    icon:"🏜️",
+    level:10,
+    description:"Горячие пески. Доступно с 10 уровня."
+},
+
+{
+    name:"Снежные земли",
+    icon:"❄️",
+    level:15,
+    description:"Холодный биом. Доступно с 15 уровня."
+},
+
+{
+    name:"Незер",
+    icon:"🔥",
+    level:20,
+    description:"Опасный мир. Доступно с 20 уровня."
+},
+
+{
+    name:"Край",
+    icon:"🟣",
+    level:30,
+    description:"Финальный биом. Доступно с 30 уровня."
+}
+
+];
+
+
+/* =====================================================
+   ДОСТИЖЕНИЯ
+===================================================== */
+
+const achievements=[
+
+{
+    id:"first",
+    icon:"🍎",
+    name:"Первый кусочек",
+    description:"Добавь первую еду.",
+    check:()=>game.totalEntries>=1
+},
+
+{
+    id:"five",
+    icon:"🍗",
+    name:"Уже голодная?",
+    description:"Добавь 5 продуктов.",
+    check:()=>game.totalEntries>=5
+},
+
+{
+    id:"ten",
+    icon:"🔥",
+    name:"Серьёзный выживальщик",
+    description:"Добавь 10 продуктов.",
+    check:()=>game.totalEntries>=10
+},
+
+{
+    id:"thousand",
+    icon:"⭐",
+    name:"Тысяча",
+    description:"Набери 1000 ккал за день.",
+    check:()=>todayCalories()>=1000
+},
+
+{
+    id:"full",
+    icon:"💥",
+    name:"Сытый игрок",
+    description:"Заполни всю шкалу до 1600 ккал.",
+    check:()=>todayCalories()>=1600
+},
+
+{
+    id:"twenty",
+    icon:"🎒",
+    name:"Полный инвентарь",
+    description:"Сделай 20 записей.",
+    check:()=>game.totalEntries>=20
+},
+
+{
+    id:"streak3",
+    icon:"🔥",
+    name:"Три дня",
+    description:"Проведи 3 дня подряд в игре.",
+    check:()=>streak()>=3
+},
+
+{
+    id:"streak7",
+    icon:"🏆",
+    name:"Неделя выживания",
+    description:"Проведи 7 дней подряд.",
+    check:()=>streak()>=7
+}
+
+];
+
+
+/* =====================================================
+   ДАТА
+===================================================== */
+
+function today(){
+
+    const d=new Date();
+
+    return d.getFullYear()+"-"+
+        String(d.getMonth()+1).padStart(2,"0")+"-"+
+        String(d.getDate()).padStart(2,"0");
+
+}
+
+
+/* =====================================================
+   СОХРАНЕНИЕ
+===================================================== */
+
+function save(){
+
+    localStorage.setItem(
+        "minefood_ru_v3",
+        JSON.stringify(game)
+    );
+
+}
+
+
+function load(){
+
+    const saved=
+        localStorage.getItem(
+            "minefood_ru_v3"
+        );
+
+    if(saved){
+
+        try{
+
+            game=JSON.parse(saved);
+
+        }catch{
+
+            console.log("Ошибка сохранения");
+
+        }
+
+    }
+
+    checkNewDay();
+
+}
+
+
+/* =====================================================
+   НОВЫЙ ДЕНЬ
+===================================================== */
+
+function checkNewDay(){
+
+    const t=today();
+
+    if(game.date!==t){
+
+        game.history[game.date]=
+            game.entries.reduce(
+                (sum,e)=>sum+e.kcal,
+                0
+            );
+
+        game.entries=[];
+
+        game.date=t;
+
+        game.daysPlayed++;
+
+        save();
+
+    }
+
+}
+
+
+/* =====================================================
+   КАЛОРИИ
+===================================================== */
+
+function todayCalories(){
+
+    return game.entries.reduce(
+        (sum,e)=>sum+Number(e.kcal),
+        0
+    );
+
+}
+
+
+/* =====================================================
+   УРОВЕНЬ
+===================================================== */
+
+function level(){
+
+    return Math.floor(game.xp/100)+1;
+
+}
+
+
+function currentXP(){
+
+    return game.xp%100;
+
+}
+
+
+/* =====================================================
+   НАВИГАЦИЯ
+===================================================== */
+
+function showPage(name){
+
+    document
+        .querySelectorAll(".page")
+        .forEach(p=>p.classList.remove("active"));
+
+    document
+        .querySelectorAll(".tab")
+        .forEach(t=>t.classList.remove("active"));
+
+
+    const page=
+        document.getElementById(
+            name+"Page"
+        );
+
+    if(page)
+        page.classList.add("active");
+
+
+    const index={
+        home:0,
+        log:1,
+        stats:2,
+        achievements:3,
+        biomes:4,
+        profile:5
+    }[name];
+
+
+    if(index!==undefined){
+
+        document
+            .querySelectorAll(".tab")[index]
+            .classList.add("active");
+
+    }
+
+
+    if(name==="log") renderLog();
+
+    if(name==="stats") renderStats();
+
+    if(name==="achievements")
+        renderAchievements();
+
+    if(name==="biomes")
+        renderBiomes();
+
+    if(name==="profile")
+        renderProfile();
+
+}
+
+
+/* =====================================================
+   ЕДА
+===================================================== */
+
+function renderFoods(){
+
+    const grid=
+        document.getElementById("foodGrid");
+
+    const search=
+        document.getElementById("search")
+            .value.toLowerCase();
+
+    const category=
+        document.getElementById("category")
+            .value;
+
+
+    grid.innerHTML="";
+
+
+    foods
+        .filter(food=>{
+
+            return food.name
+                .toLowerCase()
+                .includes(search)
+                &&
+                (
+                    category==="all"
+                    ||
+                    food.category===category
+                );
+
+        })
+        .forEach(food=>{
+
+            const card=
+                document.createElement("div");
+
+            card.className="food-card";
+
+
+            card.innerHTML=`
+
+                <div class="badge">
+                    ${categoryName(food.category)}
+                </div>
+
+                <div class="food-icon">
+                    ${food.icon}
+                </div>
+
+                <div class="food-name">
+                    ${food.name}
+                </div>
+
+                <div class="food-info">
+                    <span>
+                        ${food.portion} г
+                    </span>
+
+                    <strong>
+                        ${food.kcal} ккал
+                    </strong>
+                </div>
+
+                <div class="food-info">
+                    <span>
+                        Б ${food.protein}
+                    </span>
+
+                    <span>
+                        У ${food.carbs}
+                    </span>
+
+                    <span>
+                        Ж ${food.fat}
+                    </span>
+                </div>
+
+            `;
+
+
+            card.onclick=()=>openFood(food);
+
+            grid.appendChild(card);
+
+        });
+
+}
+
+
+function categoryName(category){
+
+    return {
+
+        fruit:"ФРУКТ",
+
+        vegetable:"ОВОЩ",
+
+        meat:"МЯСО",
+
+        fish:"РЫБА",
+
+        dairy:"МОЛОЧНОЕ",
+
+        sweet:"СЛАДКОЕ",
+
+        other:"ЕДА"
+
+    }[category]||"ЕДА";
+
+}
+
+
+/* =====================================================
+   ОКНО ЕДЫ
+===================================================== */
+
+function openFood(food){
+
+    selectedFood=food;
+
+
+    document
+        .getElementById("modalIcon")
+        .textContent=food.icon;
+
+
+    document
+        .getElementById("modalName")
+        .textContent=food.name;
+
+
+    document
+        .getElementById("modalDescription")
+        .textContent=
+            food.kcal+
+            " ккал на 100 г";
+
+
+    document
+        .getElementById("grams")
+        .value=food.portion;
+
+
+    calculateFood();
+
+
+    document
+        .getElementById("foodModal")
+        .classList.add("show");
+
+}
+
+
+function closeModal(){
+
+    selectedFood=null;
+
+    document
+        .getElementById("foodModal")
+        .classList.remove("show");
+
+}
+
+
+/* =====================================================
+   РАСЧЁТ
+===================================================== */
+
+function calculateFood(){
+
+    if(!selectedFood)return;
+
+
+    const grams=
+        Number(
+            document.getElementById("grams").value
+        )||0;
+
+
+    const multiplier=grams/100;
+
+
+    document.getElementById("modalKcal")
+        .textContent=
+            Math.round(
+                selectedFood.kcal*
+                multiplier
+            );
+
+
+    document.getElementById("modalProtein")
+        .textContent=
+            (
+                selectedFood.protein*
+                multiplier
+            ).toFixed(1);
+
+
+    document.getElementById("modalCarbs")
+        .textContent=
+            (
+                selectedFood.carbs*
+                multiplier
+            ).toFixed(1);
+
+
+    document.getElementById("modalFat")
+        .textContent=
+            (
+                selectedFood.fat*
+                multiplier
+            ).toFixed(1);
+
+}
+
+
+/* =====================================================
+   СЪЕСТЬ
+===================================================== */
+
+function eatFood(){
+
+    if(!selectedFood)return;
+
+
+    const grams=
+        Number(
+            document.getElementById("grams").value
+        );
+
+
+    if(!grams||grams<=0){
+
+        toast("Введи количество граммов!");
+
+        return;
+
+    }
+
+
+    const multiplier=grams/100;
+
+
+    const kcal=
+        Math.round(
+            selectedFood.kcal*
+            multiplier
+        );
+
+
+    const protein=
+        Number(
+            (
+                selectedFood.protein*
+                multiplier
+            ).toFixed(1)
+        );
+
+
+    const carbs=
+        Number(
+            (
+                selectedFood.carbs*
+                multiplier
+            ).toFixed(1)
+        );
+
+
+    const fat=
+        Number(
+            (
+                selectedFood.fat*
+                multiplier
+            ).toFixed(1)
+        );
+
+
+    if(
+        todayCalories()+kcal>
+        LIMIT
+    ){
+
+        toast(
+            "⚠️ Игровой лимит — 1600 ккал!"
+        );
+
+        return;
+
+    }
+
+
+    const entry={
+
+        id:Date.now(),
+
+        foodId:selectedFood.id,
+
+        name:selectedFood.name,
+
+        icon:selectedFood.icon,
+
+        grams,
+
+        kcal,
+
+        protein,
+
+        carbs,
+
+        fat,
+
+        time:new Date()
+            .toLocaleTimeString(
+                [],
+                {
+                    hour:"2-digit",
+                    minute:"2-digit"
+                }
+            )
+
+    };
+
+
+    game.entries.push(entry);
+
+    game.totalEntries++;
+
+    game.totalKcal+=kcal;
+
+
+    const gainedXP=
+        Math.max(
+            5,
+            Math.round(kcal/10)
+        );
+
+
+    game.xp+=gainedXP;
+
+
+    save();
+
+    renderHUD();
+
+    renderFoods();
+
+    renderLog();
+
+    updateHeader();
+
+    checkAchievements();
+
+    toast(
+        "🍗 +"+
+        kcal+
+        " ккал"
+    );
+
+    xpPopup(
+        "+"+
+        gainedXP+
+        " XP"
+    );
+
+
+    closeModal();
+
+}
+
+
+/* =====================================================
+   HUD
+===================================================== */
+
+function renderHUD(){
+
+    const kcal=todayCalories();
+
+
+    document.getElementById(
+        "totalCalories"
+    ).textContent=kcal;
+
+
+    document.getElementById(
+        "remainingCalories"
+    ).textContent=
+        Math.max(
+            LIMIT-kcal,
+            0
+        );
+
+
+    const percentage=
+        Math.min(
+            kcal/LIMIT*100,
+            100
+        );
+
+
+    const fill=
+        document.getElementById(
+            "energyFill"
+        );
+
+
+    fill.style.width=
+        percentage+"%";
+
+
+    fill.classList.remove(
+        "warning",
+        "full"
+    );
+
+
+    if(
+        percentage>=75 &&
+        percentage<100
+    )
+        fill.classList.add("warning");
+
+
+    if(percentage>=100)
+        fill.classList.add("full");
+
+
+    renderHunger(kcal);
+
+    updateBiome();
+
+    updateDay();
+
+}
+
+
+function renderHunger(kcal){
+
+    const amount=
+        kcal/KCAL_PER_HUNGER;
+
+
+    const container=
+        document.getElementById("hunger");
+
+
+    container.innerHTML="";
+
+
+    for(let i=0;i<HUNGER;i++){
+
+        const item=
+            document.createElement("div");
+
+        item.className="meat";
+
+
+        const value=amount-i;
+
+
+        if(value<=0)
+            item.classList.add("empty");
+
+        else if(value<1)
+            item.classList.add("half");
+
+
+        item.innerHTML=
+            '<div class="meat-body"></div>';
+
+
+        container.appendChild(item);
+
+    }
+
+}
+
+
+/* =====================================================
+   ДНЕВНИК
+===================================================== */
+
+function renderLog(){
+
+    const list=
+        document.getElementById("logList");
+
+
+    list.innerHTML="";
+
+
+    if(game.entries.length===0){
+
+        list.innerHTML=`
+
+            <div class="empty">
+                Здесь пока пусто.
+                <br>
+                Иди добывай еду, выживальщица 🌱
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    [...game.entries]
+        .reverse()
+        .forEach(entry=>{
+
+            const row=
+                document.createElement("div");
+
+            row.className="log-item";
+
+
+            row.innerHTML=`
+
+                <div class="log-left">
+
+                    <div class="log-icon">
+                        ${entry.icon}
+                    </div>
+
+                    <div>
+
+                        <div class="log-name">
+                            ${entry.name}
+                        </div>
+
+                        <div class="log-meta">
+                            ${entry.grams} г ·
+                            ${entry.time}
+                            <br>
+                            Б ${entry.protein} г ·
+                            У ${entry.carbs} г ·
+                            Ж ${entry.fat} г
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <span class="log-kcal">
+                        +${entry.kcal} ккал
+                    </span>
+
+                    <button
+                        class="delete"
+                        onclick="deleteEntry(${entry.id})">
+                        ×
+                    </button>
+
+                </div>
+
+            `;
+
+
+            list.appendChild(row);
+
+        });
+
+}
+
+
+function deleteEntry(id){
+
+    const index=
+        game.entries.findIndex(
+            e=>e.id===id
+        );
+
+
+    if(index===-1)return;
+
+
+    const entry=
+        game.entries[index];
+
+
+    game.entries.splice(
+        index,
+        1
+    );
+
+
+    game.totalKcal=
+        Math.max(
+            0,
+            game.totalKcal-entry.kcal
+        );
+
+
+    save();
+
+    renderHUD();
+
+    renderLog();
+
+}
+
+
+/* =====================================================
+   ИСТОРИЯ / STREAK
+===================================================== */
+
+function getDayCalories(key){
+
+    if(key===game.date)
+        return todayCalories();
+
+
+    return Number(
+        game.history[key]||0
+    );
+
+}
+
+
+function streak(){
+
+    let count=0;
+
+    const d=new Date();
+
+
+    while(true){
+
+        const key=
+            d.getFullYear()+"-"+
+            String(d.getMonth()+1).padStart(2,"0")+"-"+
+            String(d.getDate()).padStart(2,"0");
+
+
+        if(
+            getDayCalories(key)<=0
+        )
+            break;
+
+
+        count++;
+
+        d.setDate(
+            d.getDate()-1
+        );
+
+    }
+
+
+    return count;
+
+}
+
+
+/* =====================================================
+   СТАТИСТИКА
+===================================================== */
+
+function renderStats(){
+
+    const days=[];
+
+
+    for(let i=6;i>=0;i--){
+
+        const d=new Date();
+
+        d.setDate(
+            d.getDate()-i
+        );
+
+
+        const key=
+            d.getFullYear()+"-"+
+            String(d.getMonth()+1).padStart(2,"0")+"-"+
+            String(d.getDate()).padStart(2,"0");
+
+
+        days.push({
+
+            key,
+
+            kcal:getDayCalories(key),
+
+            label:
+                d.getDate()+
+                "."+
+                (d.getMonth()+1)
+
+        });
+
+    }
+
+
+    const average=
+        Math.round(
+            days.reduce(
+                (sum,d)=>sum+d.kcal,
+                0
+            )/7
+        );
+
+
+    document.getElementById(
+        "statToday"
+    ).textContent=todayCalories();
+
+
+    document.getElementById(
+        "statAverage"
+    ).textContent=average;
+
+
+    document.getElementById(
+        "statStreak"
+    ).textContent=streak();
+
+
+    document.getElementById(
+        "statEntries"
+    ).textContent=game.totalEntries;
+
+
+    const chart=
+        document.getElementById("chart");
+
+
+    chart.innerHTML="";
+
+
+    days.forEach(day=>{
+
+        const wrapper=
+            document.createElement("div");
+
+        wrapper.className="chart-day";
+
+
+        const value=
+            document.createElement("div");
+
+        value.className="chart-value";
+
+        value.textContent=day.kcal;
+
+
+        const bar=
+            document.createElement("div");
+
+        bar.className="chart-bar";
+
+
+        bar.style.height=
+            Math.max(
+                2,
+                Math.min(
+                    100,
+                    day.kcal/LIMIT*100
+                )
+            )+"%";
+
+
+        const label=
+            document.createElement("div");
+
+        label.className="chart-label";
+
+        label.textContent=day.label;
+
+
+        wrapper.appendChild(value);
+
+        wrapper.appendChild(bar);
+
+        wrapper.appendChild(label);
+
+        chart.appendChild(wrapper);
+
+    });
+
+}
+
+
+/* =====================================================
+   ДОСТИЖЕНИЯ
+===================================================== */
+
+function checkAchievements(){
+
+    achievements.forEach(a=>{
+
+        if(
+            !game.achievements.includes(a.id)
+            &&
+            a.check()
+        ){
+
+            game.achievements.push(a.id);
+
+            game.xp+=50;
+
+            toast(
+                "🏆 "+a.name
+            );
+
+            xpPopup("+50 XP");
+
+        }
+
+    });
+
+
+    save();
+
+    renderAchievements();
+
+}
+
+
+function renderAchievements(){
+
+    const grid=
+        document.getElementById(
+            "achievementGrid"
+        );
+
+
+    grid.innerHTML="";
+
+
+    achievements.forEach(a=>{
+
+        const unlocked=
+            game.achievements
+                .includes(a.id);
+
+
+        const card=
+            document.createElement("div");
+
+
+        card.className=
+            "achievement "+
+            (
+                unlocked
+                ?"unlocked"
+                :""
+            );
+
+
+        card.innerHTML=`
+
+            <div class="achievement-icon">
+                ${a.icon}
+            </div>
+
+            <div class="achievement-name">
+                ${a.name}
+            </div>
+
+            <div class="achievement-desc">
+                ${a.description}
+            </div>
+
+        `;
+
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+/* =====================================================
+   БИОМЫ
+===================================================== */
+
+function renderBiomes(){
+
+    const container=
+        document.getElementById("biomes");
+
+
+    container.innerHTML="";
+
+
+    const current=level();
+
+
+    biomes.forEach(biome=>{
+
+        const unlocked=
+            current>=biome.level;
+
+
+        const card=
+            document.createElement("div");
+
+
+        card.className=
+            "biome "+
+            (
+                unlocked
+                ?""
+                :"locked"
+            );
+
+
+        card.innerHTML=`
+
+            <div class="biome-icon">
+                ${biome.icon}
+            </div>
+
+            <div class="biome-name">
+                ${biome.name}
+            </div>
+
+            <div class="biome-condition">
+                ${
+                    unlocked
+                    ?"✓ ОТКРЫТО"
+                    :"🔒 УРОВЕНЬ "+
+                    biome.level
+                }
+
+                <br><br>
+
+                ${biome.description}
+            </div>
+
+        `;
+
+
+        container.appendChild(card);
+
+    });
+
+}
+
+
+/* =====================================================
+   ТЕКУЩИЙ БИОМ
+===================================================== */
+
+function currentBiome(){
+
+    let result=biomes[0];
+
+
+    biomes.forEach(b=>{
+
+        if(
+            level()>=b.level
+        )
+            result=b;
+
+    });
+
+
+    return result;
+
+}
+
+
+function updateBiome(){
+
+    const biome=
+        currentBiome();
+
+
+    document.getElementById(
+        "currentBiome"
+    ).textContent=
+        biome.name.toUpperCase();
+
+}
+
+
+/* =====================================================
+   ДЕНЬ
+===================================================== */
+
+function updateDay(){
+
+    const first=
+        localStorage.getItem(
+            "minefood_first_day"
+        );
+
+
+    if(!first){
+
+        localStorage.setItem(
+            "minefood_first_day",
+            today()
+        );
+
+    }
+
+
+    const start=
+        new Date(
+            localStorage.getItem(
+                "minefood_first_day"
+            )
+        );
+
+
+    const now=
+        new Date(today());
+
+
+    const difference=
+        Math.floor(
+            (
+                now-start
+            )/
+            (1000*60*60*24)
+        );
+
+
+    document.getElementById(
+        "dayNumber"
+    ).textContent=
+        difference+1;
+
+}
+
+
+/* =====================================================
+   ПРОФИЛЬ
+===================================================== */
+
+function renderProfile(){
+
+    const lvl=level();
+
+    const xp=currentXP();
+
+
+    document.getElementById(
+        "profileLevel"
+    ).textContent=lvl;
+
+
+    document.getElementById(
+        "profileXP"
+    ).textContent=xp;
+
+
+    document.getElementById(
+        "xpFill"
+    ).style.width=xp+"%";
+
+
+    document.getElementById(
+        "profileEntries"
+    ).textContent=
+        game.totalEntries;
+
+
+    document.getElementById(
+        "profileAchievements"
+    ).textContent=
+        game.achievements.length;
+
+
+    document.getElementById(
+        "profileDays"
+    ).textContent=
+        game.daysPlayed;
+
+
+    document.getElementById(
+        "profileKcal"
+    ).textContent=
+        Math.round(
+            game.totalKcal
+        );
+
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+function updateHeader(){
+
+    document.getElementById(
+        "headerLevel"
+    ).textContent=level();
+
+
+    document.getElementById(
+        "headerXP"
+    ).textContent=
+        game.xp+" XP";
+
+}
+
+
+/* =====================================================
+   УВЕДОМЛЕНИЕ
+===================================================== */
+
+let toastTimer;
+
+
+function toast(message){
+
+    const el=
+        document.getElementById("toast");
+
+
+    el.innerHTML=message;
+
+    el.classList.add("show");
+
+
+    clearTimeout(toastTimer);
+
+
+    toastTimer=
+        setTimeout(
+            ()=>{
+                el.classList.remove("show");
+            },
+            2200
+        );
+
+}
+
+
+/* =====================================================
+   XP АНИМАЦИЯ
+===================================================== */
+
+function xpPopup(text){
+
+    const el=
+        document.createElement("div");
+
+
+    el.className="xp-popup";
+
+    el.textContent=text;
+
+
+    document.body.appendChild(el);
+
+
+    setTimeout(
+        ()=>el.remove(),
+        1000
+    );
+
+}
+
+
+/* =====================================================
+   ЭКСПОРТ
+===================================================== */
+
+function exportSave(){
+
+    const blob=
+        new Blob(
+            [
+                JSON.stringify(
+                    game,
+                    null,
+                    2
+                )
+            ],
+            {
+                type:"application/json"
+            }
+        );
+
+
+    const url=
+        URL.createObjectURL(blob);
+
+
+    const link=
+        document.createElement("a");
+
+
+    link.href=url;
+
+    link.download=
+        "minefood-сохранение.json";
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(url);
+
+
+    toast(
+        "💾 Сохранение скачано!"
+    );
+
+}
+
+
+/* =====================================================
+   ИМПОРТ
+===================================================== */
+
+function importSave(event){
+
+    const file=
+        event.target.files[0];
+
+
+    if(!file)return;
+
+
+    const reader=
+        new FileReader();
+
+
+    reader.onload=()=>{
+
+        try{
+
+            const imported=
+                JSON.parse(
+                    reader.result
+                );
+
+
+            if(
+                !imported.entries ||
+                !imported.history
+            )
+                throw new Error();
+
+
+            game=imported;
+
+            save();
+
+            renderAll();
+
+            toast(
+                "💾 Мир восстановлен!"
+            );
+
+        }catch{
+
+            toast(
+                "❌ Файл повреждён!"
+            );
+
+        }
+
+    };
+
+
+    reader.readAsText(file);
+
+}
+
+
+/* =====================================================
+   СБРОС
+===================================================== */
+
+function resetGame(){
+
+    if(
+        !confirm(
+            "Точно удалить весь мир и весь прогресс?"
+        )
+    )
+        return;
+
+
+    localStorage.removeItem(
+        "minefood_ru_v3"
+    );
+
+    localStorage.removeItem(
+        "minefood_first_day"
+    );
+
+
+    game={
+
+        date:today(),
+
+        entries:[],
+
+        history:{},
+
+        xp:0,
+
+        totalEntries:0,
+
+        totalKcal:0,
+
+        daysPlayed:0,
+
+        achievements:[]
+
+    };
+
+
+    save();
+
+    renderAll();
+
+    toast(
+        "🌱 Новый мир создан!"
+    );
+
+}
+
+
+/* =====================================================
+   ОБНОВИТЬ ВСЁ
+===================================================== */
+
+function renderAll(){
+
+    renderFoods();
+
+    renderHUD();
+
+    renderLog();
+
+    renderStats();
+
+    renderAchievements();
+
+    renderBiomes();
+
+    renderProfile();
+
+    updateHeader();
+
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+document
+    .getElementById("foodModal")
+    .addEventListener(
+        "click",
+        e=>{
+
+            if(
+                e.target.id==="foodModal"
+            )
+                closeModal();
+
+        }
+    );
+
+
+document.addEventListener(
+    "keydown",
+    e=>{
+
+        if(
+            e.key==="Escape"
+        )
+            closeModal();
+
+    }
+);
+
+
+/* =====================================================
+   СТАРТ
+===================================================== */
+
+function init(){
+
+    load();
+
+    renderAll();
+
+    checkAchievements();
+
+}
+
+
+init();
+
+</script>
+
+</body>
+</html>
