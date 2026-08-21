@@ -4991,20 +4991,7 @@ async function checkAuth(){
    АВТОМАТИЧЕСКАЯ ПРОВЕРКА
 ===================================================== */
 
-supabaseClient.auth.onAuthStateChange(
-    async (event, session) => {
 
-        if(
-            event === "SIGNED_IN" &&
-            session
-        ){
-
-            await enterGame();
-
-        }
-
-    }
-);
 
 
 /* Проверяем аккаунт */
