@@ -7,6 +7,36 @@
 <title>MINEFOOD — Выживание</title>
 
 <style>
+ .auth-switch-button{
+    width:100%;
+
+    margin-top:10px;
+
+    padding:13px;
+
+    color:#ddd;
+
+    background:#242424;
+
+    border:4px solid #111;
+
+    box-shadow:
+        inset 0 0 0 2px #666;
+
+    font-family:'Press Start 2P',monospace;
+    font-size:7px;
+
+    cursor:pointer;
+}
+
+.auth-switch-button:hover{
+    color:#fff;
+
+    background:#3b3b3b;
+
+    box-shadow:
+        inset 0 0 0 2px #8bd653;
+}
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root{
@@ -1359,6 +1389,21 @@ button{cursor:pointer}
             onclick="handleAuth()">
             ВОЙТИ
         </button>
+     <button
+    id="continueButton"
+    class="auth-main-button"
+    onclick="continueExistingAccount()"
+    style="display:none;">
+    ПРОДОЛЖИТЬ
+</button>
+
+<button
+    id="switchAccountButton"
+    class="auth-switch-button"
+    onclick="switchAccount()"
+    style="display:none;">
+    ВОЙТИ В ДРУГОЙ АККАУНТ
+</button>
 
         <div
             id="authMessage"
@@ -4409,7 +4454,145 @@ function init(){
 
 let authMode = "login";
 
+function showContinueAccount(email){
 
+    const message =
+        document.getElementById(
+            "authMessage"
+        );
+
+    message.textContent =
+        "С возвращением, " + email;
+
+
+    const continueButton =
+        document.getElementById(
+            "continueButton"
+        );
+
+    const switchButton =
+        document.getElementById(
+            "switchAccountButton"
+        );
+
+    const authButton =
+        document.getElementById(
+            "authButton"
+        );
+
+
+    continueButton.style.display =
+        "block";
+
+    switchButton.style.display =
+        "block";
+
+    authButton.style.display =
+        "none";
+
+
+    document.getElementById(
+        "authEmail"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "authPassword"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "loginTab"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "registerTab"
+    ).style.display = "none";
+
+}
+
+
+function showNormalAuth(){
+
+    document.getElementById(
+        "continueButton"
+    ).style.display = "none";
+
+    document.getElementById(
+        "switchAccountButton"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "authButton"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "authEmail"
+    ).style.display = "block";
+
+    document.getElementById(
+        "authPassword"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "loginTab"
+    ).style.display = "flex";
+
+    document.getElementById(
+        "registerTab"
+    ).style.display = "flex";
+
+
+    document.getElementById(
+        "authMessage"
+    ).textContent = "";
+
+}
+
+
+async function continueExistingAccount(){
+
+    await enterGame();
+
+}
+
+
+async function switchAccount(){
+
+    /*
+     * Полностью закрываем текущую
+     * Supabase-сессию.
+     */
+
+    await supabaseClient.auth.signOut();
+
+
+    /*
+     * Очищаем форму.
+
+     * Браузер при этом всё равно может
+     * предложить сохранённые аккаунты.
+     */
+
+    document.getElementById(
+        "authEmail"
+    ).value = "";
+
+    document.getElementById(
+        "authPassword"
+    ).value = "";
+
+
+    showNormalAuth();
+
+
+    showAuthMode("login");
+
+}
 function showAuthMode(mode){
 
     authMode = mode;
@@ -4756,21 +4939,39 @@ async function checkAuth(){
                 .getSession();
 
 
-        if(session){
+        const screen =
+            document.getElementById(
+                "authScreen"
+            );
 
-            await enterGame();
+
+        /*
+         * Всегда показываем стартовый экран.
+         * Даже если пользователь уже вошёл.
+         */
+
+        screen.classList.remove(
+            "hidden"
+        );
+
+
+        /*
+         * Если есть активный аккаунт,
+         * показываем кнопку "Продолжить".
+         */
+
+        if(session && session.user){
+
+            showContinueAccount(
+                session.user.email
+            );
 
         }else{
 
-            document
-                .getElementById(
-                    "authScreen"
-                )
-                .classList.remove(
-                    "hidden"
-                );
+            showNormalAuth();
 
         }
+
 
     }catch(error){
 
@@ -4778,6 +4979,8 @@ async function checkAuth(){
             "Ошибка проверки аккаунта:",
             error
         );
+
+        showNormalAuth();
 
     }
 
