@@ -1160,6 +1160,82 @@ button{cursor:pointer}
 
     line-height:1.8;
 }
+/* =====================================================
+   УНИВЕРСАЛЬНАЯ КНОПКА НАЗАД
+===================================================== */
+
+.back-button{
+    position:fixed;
+    top:92px;
+    left:20px;
+
+    z-index:150;
+
+    display:none;
+
+    align-items:center;
+    gap:8px;
+
+    padding:12px 16px;
+
+    background:#3b3b3b;
+    color:#fff;
+
+    border:4px solid #111;
+
+    box-shadow:
+        inset 0 0 0 2px #777,
+        5px 5px 0 rgba(0,0,0,.35);
+
+    font-family:'Press Start 2P',monospace;
+    font-size:7px;
+
+    cursor:pointer;
+
+    transition:
+        transform .08s,
+        background .08s;
+}
+
+.back-button.visible{
+    display:flex;
+}
+
+.back-button:hover{
+    background:#5d9e37;
+
+    box-shadow:
+        inset 0 0 0 2px #8bd653,
+        5px 5px 0 rgba(0,0,0,.35);
+}
+
+.back-button:active{
+    transform:translate(3px,3px);
+    box-shadow:
+        inset 0 0 0 2px #777;
+}
+
+.back-arrow{
+    font-size:18px;
+    line-height:1;
+}
+
+@media(max-width:700px){
+
+    .back-button{
+        top:82px;
+        left:10px;
+
+        padding:9px 11px;
+
+        font-size:6px;
+    }
+
+    .back-arrow{
+        font-size:15px;
+    }
+
+}
 </style>
 </head>
 
@@ -1254,6 +1330,18 @@ button{cursor:pointer}
 
 
 <div class="app">
+ <!-- УНИВЕРСАЛЬНАЯ КНОПКА НАЗАД -->
+
+<button
+    id="backButton"
+    class="back-button"
+    onclick="goBack()">
+
+    <span class="back-arrow">←</span>
+
+    <span>НАЗАД</span>
+
+</button>
 
 <!-- ================= HOME ================= -->
 
@@ -2668,61 +2756,393 @@ function currentXP(){
 /* =====================================================
    НАВИГАЦИЯ
 ===================================================== */
+/* =====================================================
+   НАВИГАЦИЯ MINEFOOD
+===================================================== */
+
+/*
+ * История посещённых страниц.
+ *
+ * Например:
+ *
+ * home → log → stats
+ *
+ * Нажимаем назад:
+ *
+ * stats → log
+ *
+ * Ещё раз:
+ *
+ * log → home
+ */
+
+let pageHistory = ["home"];
+
+let currentPage = "home";
+
 
 function showPage(name){
 
+    /*
+     * Если пользователь нажал
+     * на ту же самую страницу —
+     * ничего не делаем.
+     */
+
+    if(name === currentPage){
+        return;
+    }
+
+
+    /*
+     * Запоминаем предыдущую страницу.
+     */
+
+    pageHistory.push(name);
+
+    currentPage = name;
+
+
+    /*
+     * Скрываем все страницы.
+     */
+
     document
         .querySelectorAll(".page")
-        .forEach(p=>p.classList.remove("active"));
+        .forEach(page => {
+
+            page.classList.remove("active");
+
+        });
+
+
+    /*
+     * Убираем активность со всех вкладок.
+     */
 
     document
         .querySelectorAll(".tab")
-        .forEach(t=>t.classList.remove("active"));
+        .forEach(tab => {
+
+            tab.classList.remove("active");
+
+        });
 
 
-    const page=
+    /*
+     * Показываем нужную страницу.
+     */
+
+    const page =
         document.getElementById(
-            name+"Page"
+            name + "Page"
         );
 
-    if(page)
+
+    if(page){
+
         page.classList.add("active");
 
+    }
 
-    const index={
+
+    /*
+     * Определяем активную вкладку.
+     */
+
+    const index = {
+
         home:0,
         log:1,
         stats:2,
         achievements:3,
         biomes:4,
         profile:5
+
     }[name];
 
 
-    if(index!==undefined){
+    if(index !== undefined){
 
-        document
-            .querySelectorAll(".tab")[index]
-            .classList.add("active");
+        const tabs =
+            document.querySelectorAll(".tab");
+
+
+        if(tabs[index]){
+
+            tabs[index]
+                .classList
+                .add("active");
+
+        }
 
     }
 
 
-    if(name==="log") renderLog();
+    /*
+     * Рендерим содержимое
+     * соответствующей страницы.
+     */
 
-    if(name==="stats") renderStats();
+    if(name === "log"){
 
-    if(name==="achievements")
+        renderLog();
+
+    }
+
+
+    if(name === "stats"){
+
+        renderStats();
+
+    }
+
+
+    if(name === "achievements"){
+
         renderAchievements();
 
-    if(name==="biomes")
+    }
+
+
+    if(name === "biomes"){
+
         renderBiomes();
 
-    if(name==="profile")
+    }
+
+
+    if(name === "profile"){
+
         renderProfile();
+
+    }
+
+
+    /*
+     * Показываем / скрываем
+     * кнопку назад.
+     */
+
+    updateBackButton();
 
 }
 
+
+/* =====================================================
+   НАЗАД
+===================================================== */
+
+function goBack(){
+
+    /*
+     * Если истории нет —
+     * остаёмся на главной.
+     */
+
+    if(pageHistory.length <= 1){
+
+        showPageWithoutHistory("home");
+
+        return;
+
+    }
+
+
+    /*
+     * Убираем текущую страницу
+     * из истории.
+     */
+
+    pageHistory.pop();
+
+
+    /*
+     * Берём предыдущую.
+     */
+
+    const previous =
+        pageHistory[
+            pageHistory.length - 1
+        ];
+
+
+    /*
+     * Показываем её без добавления
+     * новой записи в историю.
+     */
+
+    showPageWithoutHistory(previous);
+
+}
+
+
+/* =====================================================
+   ПЕРЕКЛЮЧЕНИЕ БЕЗ ДОБАВЛЕНИЯ В ИСТОРИЮ
+===================================================== */
+
+function showPageWithoutHistory(name){
+
+    currentPage = name;
+
+
+    /*
+     * Скрываем все страницы.
+     */
+
+    document
+        .querySelectorAll(".page")
+        .forEach(page => {
+
+            page.classList.remove("active");
+
+        });
+
+
+    /*
+     * Убираем активность вкладок.
+     */
+
+    document
+        .querySelectorAll(".tab")
+        .forEach(tab => {
+
+            tab.classList.remove("active");
+
+        });
+
+
+    /*
+     * Показываем нужную.
+     */
+
+    const page =
+        document.getElementById(
+            name + "Page"
+        );
+
+
+    if(page){
+
+        page.classList.add("active");
+
+    }
+
+
+    /*
+     * Активная вкладка.
+     */
+
+    const index = {
+
+        home:0,
+        log:1,
+        stats:2,
+        achievements:3,
+        biomes:4,
+        profile:5
+
+    }[name];
+
+
+    if(index !== undefined){
+
+        const tabs =
+            document.querySelectorAll(".tab");
+
+
+        if(tabs[index]){
+
+            tabs[index]
+                .classList
+                .add("active");
+
+        }
+
+    }
+
+
+    /*
+     * Обновляем содержимое.
+     */
+
+    if(name === "log"){
+
+        renderLog();
+
+    }
+
+    if(name === "stats"){
+
+        renderStats();
+
+    }
+
+    if(name === "achievements"){
+
+        renderAchievements();
+
+    }
+
+    if(name === "biomes"){
+
+        renderBiomes();
+
+    }
+
+    if(name === "profile"){
+
+        renderProfile();
+
+    }
+
+
+    updateBackButton();
+
+}
+
+
+/* =====================================================
+   КНОПКА НАЗАД
+===================================================== */
+
+function updateBackButton(){
+
+    const button =
+        document.getElementById(
+            "backButton"
+        );
+
+
+    if(!button){
+
+        return;
+
+    }
+
+
+    /*
+     * На главной кнопка не нужна.
+     */
+
+    if(
+        currentPage === "home" ||
+        pageHistory.length <= 1
+    ){
+
+        button.classList.remove(
+            "visible"
+        );
+
+    }else{
+
+        button.classList.add(
+            "visible"
+        );
+
+    }
+
+}
 
 /* =====================================================
    ЕДА
